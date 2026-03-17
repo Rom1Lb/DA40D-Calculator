@@ -78,7 +78,7 @@ export default function App() {
             </svg>
           </div>
           <div>
-            <div className="brand-title">DA40-D Calculator</div>
+            <div className="brand-title">DA40-D Performance</div>
             <div className="brand-sub">
               NewCAG fleet · AFM Doc. #6.01.05-E Rev. 7 · 27-Sep-2013
             </div>
@@ -106,7 +106,7 @@ export default function App() {
 
         <button
           className="btn btn-primary"
-          onClick={handlePDF}
+          onClick={generateDispatchPDF}
           style={{ flexShrink: 0 }}
         >
           <svg
@@ -126,10 +126,10 @@ export default function App() {
       </header>
 
       <main className="main-grid">
-        <div className="col">
+        <div className="col col-mb">
           <MassBalancePanel state={state} setField={setField} mb={mb} />
         </div>
-        <div className="col">
+        <div className="col col-mid">
           <AircraftPanel state={state} setField={setField} mb={mb} />
           <AerodromePanel
             state={state}
@@ -140,7 +140,7 @@ export default function App() {
             mb={mb}
           />
         </div>
-        <div className="col">
+        <div className="col col-perf">
           <PerformancePanel
             perfDep={perfDep}
             perfDest={perfDest}

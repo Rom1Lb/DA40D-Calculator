@@ -187,11 +187,23 @@ body,
   padding: 16px 20px 48px;
   align-items: start;
 }
+
 @media (max-width: 900px) {
   .main-grid {
     grid-template-columns: 1fr;
   }
+  /* on mobile: mid col (aircraft+aero) comes first */
+  .col-mid {
+    order: 1;
+  }
+  .col-mb {
+    order: 2;
+  }
+  .col-perf {
+    order: 3;
+  }
 }
+
 .col {
   display: flex;
   flex-direction: column;
