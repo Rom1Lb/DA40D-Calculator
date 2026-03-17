@@ -106,7 +106,7 @@ export default function App() {
 
         <button
           className="btn btn-primary"
-          onClick={generateDispatchPDF}
+          onClick={handlePDF}
           style={{ flexShrink: 0 }}
         >
           <svg
