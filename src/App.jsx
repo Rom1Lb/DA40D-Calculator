@@ -78,7 +78,7 @@ export default function App() {
             </svg>
           </div>
           <div>
-            <div className="brand-title">DA40-D Performance</div>
+            <div className="brand-title">DA40-D Calculator</div>
             <div className="brand-sub">
               NewCAG fleet · AFM Doc. #6.01.05-E Rev. 7 · 27-Sep-2013
             </div>
