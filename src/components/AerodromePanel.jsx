@@ -462,9 +462,11 @@ function AerodromeForm({ ad, perf, onChange, onBulkChange, phase }) {
   const [status, setStatus] = useState("idle"); // idle | loading | ok | error
   const [statusMsg, setStatusMsg] = useState("");
   const [fresh, setFresh] = useState(new Set()); // green flash — just filled
-  const [stale, setStale] = useState(new Set()); // red flash — nearest METAR
+  const [stale, setStale] = useState(new Set()); // amber flash — nearest METAR
+  const [empty, setEmpty] = useState(new Set()); // red flash — field was cleared
   const flashTimer = useRef(null);
   const staleTimer = useRef(null);
+  const emptyTimer = useRef(null);
 
   /** Green flash — fields just filled from exact station */
   const flash = useCallback((fields) => {
@@ -478,6 +480,13 @@ function AerodromeForm({ ad, perf, onChange, onBulkChange, phase }) {
     clearTimeout(staleTimer.current);
     setStale(new Set(fields));
     staleTimer.current = setTimeout(() => setStale(new Set()), 4000);
+  }, []);
+
+  /** Red flash — fields that were cleared because no data was found */
+  const flashEmpty = useCallback((fields) => {
+    clearTimeout(emptyTimer.current);
+    setEmpty(new Set(fields));
+    emptyTimer.current = setTimeout(() => setEmpty(new Set()), 4000);
   }, []);
 
   /** Main lookup handler */
@@ -525,6 +534,11 @@ function AerodromeForm({ ad, perf, onChange, onBulkChange, phase }) {
         bulk.rwyAxis = hdg ?? "";
         bulk.rwyLengthM = rw.lengthM;
         filled.push("runway", "rwyAxis", "rwyLengthM");
+      } else {
+        // No runway data in OurAirports — clear fields so stale data never lingers
+        bulk.runway = "";
+        bulk.rwyAxis = "";
+        bulk.rwyLengthM = "";
       }
 
       // ── METAR ───────────────────────────────────────────────
@@ -576,6 +590,9 @@ function AerodromeForm({ ad, perf, onChange, onBulkChange, phase }) {
         flash(filled);
       }
 
+      // Red flash on runway fields if no runway data was found
+      if (!best) flashEmpty(["runway", "rwyAxis", "rwyLengthM"]);
+
       // ── Status line ─────────────────────────────────────────
       const name = airport.name || code;
       const nearInfo = metar?._nearest ? ` · nearest: ${metar._station}` : "";
@@ -586,8 +603,9 @@ function AerodromeForm({ ad, perf, onChange, onBulkChange, phase }) {
       const rwInfo = best
         ? ` · RWY ${best.end === "le" ? best.rw.leIdent : best.rw.heIdent}`
         : "";
+      const noRwy = !best ? " · no runway data " : "";
       setStatus(!metar ? "warning" : "ok");
-      setStatusMsg(`${name}${rwInfo}${metarTime}${noMetar}`);
+      setStatusMsg(`${name}${rwInfo}${metarTime}${noMetar}${noRwy}`);
     } catch (err) {
       setStatus("error");
       setStatusMsg(err.message ?? "Lookup failed");
@@ -600,12 +618,15 @@ function AerodromeForm({ ad, perf, onChange, onBulkChange, phase }) {
 
   // Green outline = freshly filled from exact station
   // Amber outline = filled from nearest station (stale warning)
+  // Red outline   = field was cleared (no data found)
   const hiInput = (name) =>
     fresh.has(name)
       ? { outline: "1.5px solid rgba(63,185,80,0.5)", outlineOffset: "1px" }
       : stale.has(name)
         ? { outline: "1.5px solid rgba(210,153,34,0.7)", outlineOffset: "1px" }
-        : {};
+        : empty.has(name)
+          ? { outline: "1.5px solid rgba(248,81,73,0.7)", outlineOffset: "1px" }
+          : {};
 
   // Lookup button colours by status
   const btnStyle = {
@@ -787,20 +808,83 @@ function AerodromeForm({ ad, perf, onChange, onBulkChange, phase }) {
         />
       </div>
 
-      {/* ── Status line — full width under all input rows ──────── */}
+      {/* ── Status line — segments coloured to match field outlines ── */}
       {statusMsg && (
         <div
           style={{
             fontSize: 9,
-            color:
-              status === "error"
-                ? "var(--red)"
-                : status === "ok"
-                  ? "var(--green)"
-                  : "var(--muted)",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0 4px",
           }}
         >
-          {statusMsg}
+          {statusMsg.split(" · ").map((seg, i) => {
+            // First segment is always the airport name — colour by overall status
+            if (i === 0)
+              return (
+                <span
+                  key={i}
+                  style={{
+                    color:
+                      status === "error"
+                        ? "var(--red)"
+                        : status === "ok"
+                          ? "var(--green)"
+                          : "var(--amber)",
+                  }}
+                >
+                  {seg}
+                </span>
+              );
+            // Runway segment — red if no data, green if filled
+            if (seg.startsWith("RWY") || seg.startsWith("no runway"))
+              return (
+                <span
+                  key={i}
+                  style={{
+                    color: seg.startsWith("no runway")
+                      ? "var(--red)"
+                      : "var(--green)",
+                  }}
+                >
+                  · {seg}
+                </span>
+              );
+            // METAR segment — amber if nearest, green if exact
+            if (seg.startsWith("METAR"))
+              return (
+                <span
+                  key={i}
+                  style={{
+                    color: seg.includes("nearest")
+                      ? "var(--amber)"
+                      : "var(--green)",
+                  }}
+                >
+                  · {seg}
+                </span>
+              );
+            // nearest: segment — amber
+            if (seg.startsWith("nearest"))
+              return (
+                <span key={i} style={{ color: "var(--amber)" }}>
+                  · {seg}
+                </span>
+              );
+            // no METAR — amber
+            if (seg.startsWith("no METAR"))
+              return (
+                <span key={i} style={{ color: "var(--amber)" }}>
+                  · {seg}
+                </span>
+              );
+            // fallback
+            return (
+              <span key={i} style={{ color: "var(--muted)" }}>
+                · {seg}
+              </span>
+            );
+          })}
         </div>
       )}
 
