@@ -24,6 +24,7 @@ export default function App() {
     state,
     setField,
     setAeroField,
+    setBulkAeroFields,
     mb,
     perfDep,
     perfDest,
@@ -78,7 +79,7 @@ export default function App() {
             </svg>
           </div>
           <div>
-            <div className="brand-title">DA40-D Performance</div>
+            <div className="brand-title">DA40-D Calculator</div>
             <div className="brand-sub">
               NewCAG fleet · AFM Doc. #6.01.05-E Rev. 7 · 27-Sep-2013
             </div>
@@ -134,6 +135,7 @@ export default function App() {
           <AerodromePanel
             state={state}
             setAeroField={setAeroField}
+            setBulkAeroFields={setBulkAeroFields}
             perfDep={perfDep}
             perfDest={perfDest}
             perfAlt={perfAlt}

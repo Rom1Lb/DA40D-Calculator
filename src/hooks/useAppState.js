@@ -58,6 +58,25 @@ export function useAppState() {
     }));
   }
 
+  /**
+   * Apply multiple aerodrome field updates in a single setState call.
+   * Use this for bulk fills (e.g. ICAO lookup) so React never sees
+   * partial state — each call to setAeroField in a loop would overwrite
+   * the previous one because they all close over the same stale snapshot.
+   *
+   * @param {string} which   - "dep" | "dest" | "alt"
+   * @param {object} updates - { fieldName: value, … }
+   */
+  function setBulkAeroFields(which, updates) {
+    setState((s) => ({
+      ...s,
+      aerodromes: {
+        ...s.aerodromes,
+        [which]: { ...s.aerodromes[which], ...updates },
+      },
+    }));
+  }
+
   const mb = useMemo(() => {
     const ac = AIRCRAFT_LIST.find((a) => a.registration === state.acReg);
     if (!ac) return null;
@@ -226,6 +245,7 @@ export function useAppState() {
     state,
     setField,
     setAeroField,
+    setBulkAeroFields,
     mb,
     airspeeds,
     perfDep,
