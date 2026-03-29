@@ -628,3 +628,63 @@ select option {
   color: var(--muted);
   margin-bottom: 8px;
 }
+/* ── Append these rules to the END of src/styles/global.css ── */
+
+/* Spinner used in MetarSidebar refresh button */
+@keyframes _spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Multi-page responsive breakpoints ──────────────────────── */
+
+/* Performance page: 3 columns → 1 column on small screens */
+@media (max-width: 1100px) {
+  .perf-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+@media (max-width: 700px) {
+  .perf-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Setup page: 3 columns → 2 → 1 */
+@media (max-width: 900px) {
+  .setup-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .setup-metar {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+}
+@media (max-width: 600px) {
+  .setup-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .setup-metar {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* M&B page: 2 columns → 1 */
+@media (max-width: 800px) {
+  .mb-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* TopNav: hide labels on very small screens */
+@media (max-width: 520px) {
+  .topnav-pages a span.nav-label {
+    display: none;
+  }
+}
+
+/* bg3 token used in MetarSidebar raw METAR block */
+:root {
+  --bg3: #2d333b;
+}
