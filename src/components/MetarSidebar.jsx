@@ -10,9 +10,10 @@ const REFRESH_MS = 5 * 60 * 1000; // 5 min auto-refresh
 async function fetchMetar(icao) {
   if (!CHECKWX_KEY || !icao) return null;
   try {
-    const res = await fetch(`https://api.checkwx.com/metar/${icao}/decoded`, {
-      headers: { "X-API-Key": CHECKWX_KEY },
-    });
+    const res = await fetch(
+      `https://api.checkwx.com/metar/${icao}/decoded`,
+      { headers: { "X-API-Key": CHECKWX_KEY } },
+    );
     if (!res.ok) return null;
     const json = await res.json();
     const m = json?.data?.[0];
@@ -28,9 +29,7 @@ async function fetchMetar(icao) {
       windSpd: m.wind?.speed_kts ?? null,
       windGust: m.wind?.gust_kts ?? null,
       vis: m.visibility?.meters ?? null,
-      clouds:
-        (m.clouds ?? []).map((c) => `${c.code}${c.base_feet_agl}`).join(" ") ||
-        "CAVOK",
+      clouds: (m.clouds ?? []).map((c) => `${c.code}${c.base_feet_agl}`).join(" ") || "CAVOK",
       flightCategory: m.flight_category ?? null,
     };
   } catch {
@@ -40,16 +39,11 @@ async function fetchMetar(icao) {
 
 function categoryColor(cat) {
   switch (cat) {
-    case "VFR":
-      return "var(--green)";
-    case "MVFR":
-      return "var(--blue)";
-    case "IFR":
-      return "var(--red)";
-    case "LIFR":
-      return "#a855f7";
-    default:
-      return "var(--muted)";
+    case "VFR":  return "var(--green)";
+    case "MVFR": return "var(--blue)";
+    case "IFR":  return "var(--red)";
+    case "LIFR": return "#a855f7";
+    default:     return "var(--muted)";
   }
 }
 
@@ -58,15 +52,7 @@ function WindArrow({ dir }) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" style={{ flexShrink: 0 }}>
       <g transform={`rotate(${dir}, 8, 8)`}>
-        <line
-          x1="8"
-          y1="13"
-          x2="8"
-          y2="5"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
+        <line x1="8" y1="13" x2="8" y2="5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         <polygon points="8,2 5,7 11,7" fill="currentColor" />
       </g>
     </svg>
@@ -79,11 +65,7 @@ function MetarCard({ label, icao, phase }) {
   const [lastFetch, setLastFetch] = useState(null);
 
   const load = useCallback(async () => {
-    if (!icao) {
-      setStatus("idle");
-      setMetar(null);
-      return;
-    }
+    if (!icao) { setStatus("idle"); setMetar(null); return; }
     setStatus("loading");
     const m = await fetchMetar(icao.toUpperCase());
     if (m) {
@@ -96,9 +78,7 @@ function MetarCard({ label, icao, phase }) {
   }, [icao]);
 
   // Fetch on mount and when ICAO changes
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
@@ -106,61 +86,45 @@ function MetarCard({ label, icao, phase }) {
     return () => clearInterval(id);
   }, [load]);
 
-  const phaseLabel =
-    phase === "takeoff" ? "DEP" : phase === "landing-dest" ? "DEST" : "ALT";
-  const phaseColor =
-    phase === "takeoff"
-      ? "var(--blue)"
-      : phase === "landing-dest"
-        ? "var(--green)"
-        : "var(--amber)";
+  const phaseLabel = phase === "takeoff" ? "DEP" : phase === "landing-dest" ? "DEST" : "ALT";
+  const phaseColor = phase === "takeoff" ? "var(--blue)" : phase === "landing-dest" ? "var(--green)" : "var(--amber)";
 
   return (
-    <div
-      style={{
-        background: "var(--bg2)",
-        border: "0.5px solid var(--border)",
-        borderRadius: "var(--radius-md)",
-        overflow: "hidden",
-      }}
-    >
+    <div style={{
+      background: "var(--bg2)",
+      border: "0.5px solid var(--border)",
+      borderRadius: "var(--radius-md)",
+      overflow: "hidden",
+    }}>
       {/* Card header */}
-      <div
-        style={{
-          padding: "7px 10px",
-          borderBottom: "0.5px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 6,
-        }}
-      >
+      <div style={{
+        padding: "7px 10px",
+        borderBottom: "0.5px solid var(--border)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 6,
+      }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              padding: "1px 5px",
-              borderRadius: 3,
-              background: `${phaseColor}18`,
-              color: phaseColor,
-              letterSpacing: "0.5px",
-            }}
-          >
-            {phaseLabel}
-          </span>
+          <span style={{
+            fontSize: 9,
+            fontWeight: 700,
+            padding: "1px 5px",
+            borderRadius: 3,
+            background: `${phaseColor}18`,
+            color: phaseColor,
+            letterSpacing: "0.5px",
+          }}>{phaseLabel}</span>
           <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text)" }}>
             {icao || label}
           </span>
           {metar?.flightCategory && (
-            <span
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                color: categoryColor(metar.flightCategory),
-                letterSpacing: "0.5px",
-              }}
-            >
+            <span style={{
+              fontSize: 9,
+              fontWeight: 700,
+              color: categoryColor(metar.flightCategory),
+              letterSpacing: "0.5px",
+            }}>
               {metar.flightCategory}
             </span>
           )}
@@ -186,16 +150,11 @@ function MetarCard({ label, icao, phase }) {
             }}
           >
             <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
+              width="11" height="11" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" strokeWidth="2.2"
               strokeLinecap="round"
               style={{
-                animation:
-                  status === "loading" ? "_spin 0.75s linear infinite" : "none",
+                animation: status === "loading" ? "_spin 0.75s linear infinite" : "none",
               }}
             >
               <polyline points="1 4 1 10 7 10" />
@@ -228,98 +187,48 @@ function MetarCard({ label, icao, phase }) {
             {/* Wind */}
             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <WindArrow dir={metar.windDir} />
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "var(--text)",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {metar.windDir != null
-                  ? `${String(metar.windDir).padStart(3, "0")}°`
-                  : "VRB"}
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", fontVariantNumeric: "tabular-nums" }}>
+                {metar.windDir != null ? `${String(metar.windDir).padStart(3, "0")}°` : "VRB"}
                 {" / "}
                 {metar.windSpd ?? "—"} kt
                 {metar.windGust != null && (
-                  <span style={{ color: "var(--amber)" }}>
-                    {" "}
-                    G{metar.windGust}
-                  </span>
+                  <span style={{ color: "var(--amber)" }}> G{metar.windGust}</span>
                 )}
               </span>
             </div>
 
             {/* Grid: OAT, DP, QNH, Vis */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "3px 8px",
-              }}
-            >
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3px 8px" }}>
               {[
                 { k: "OAT", v: metar.oat != null ? `${metar.oat} °C` : "—" },
-                { k: "DP", v: metar.dp != null ? `${metar.dp} °C` : "—" },
+                { k: "DP",  v: metar.dp  != null ? `${metar.dp} °C`  : "—" },
                 { k: "QNH", v: metar.qnh != null ? `${metar.qnh} hPa` : "—" },
-                {
-                  k: "Vis",
-                  v:
-                    metar.vis != null
-                      ? `${metar.vis >= 9999 ? "10+" : metar.vis} m`
-                      : "—",
-                },
+                { k: "Vis", v: metar.vis != null ? `${metar.vis >= 9999 ? "10+" : metar.vis} m` : "—" },
               ].map(({ k, v }) => (
-                <div
-                  key={k}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 4,
-                  }}
-                >
-                  <span style={{ fontSize: 10, color: "var(--faint)" }}>
-                    {k}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      color: "var(--text)",
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {v}
-                  </span>
+                <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 4 }}>
+                  <span style={{ fontSize: 10, color: "var(--faint)" }}>{k}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text)", fontVariantNumeric: "tabular-nums" }}>{v}</span>
                 </div>
               ))}
             </div>
 
             {/* Clouds */}
-            <div
-              style={{
-                fontSize: 10,
-                color: "var(--muted)",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
+            <div style={{ fontSize: 10, color: "var(--muted)", fontVariantNumeric: "tabular-nums" }}>
               {metar.clouds}
             </div>
 
             {/* Raw METAR */}
-            <div
-              style={{
-                marginTop: 2,
-                padding: "4px 6px",
-                background: "var(--bg3)",
-                borderRadius: 4,
-                fontSize: 9,
-                color: "var(--faint)",
-                fontFamily: "var(--font-mono)",
-                wordBreak: "break-all",
-                lineHeight: 1.4,
-              }}
-            >
+            <div style={{
+              marginTop: 2,
+              padding: "4px 6px",
+              background: "var(--bg3)",
+              borderRadius: 4,
+              fontSize: 9,
+              color: "var(--faint)",
+              fontFamily: "var(--font-mono)",
+              wordBreak: "break-all",
+              lineHeight: 1.4,
+            }}>
               {metar.raw || "—"}
             </div>
           </div>
@@ -334,45 +243,37 @@ function MetarCard({ label, icao, phase }) {
  * Placed on the right side of the Setup page.
  */
 export function MetarSidebar({ aerodromes }) {
-  const dep = aerodromes?.dep?.icao ?? "";
+  const dep  = aerodromes?.dep?.icao  ?? "";
   const dest = aerodromes?.dest?.icao ?? "";
-  const alt = aerodromes?.alt?.icao ?? "";
+  const alt  = aerodromes?.alt?.icao  ?? "";
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-      }}
-    >
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+    }}>
       {/* Header */}
-      <div
-        className="card-header"
-        style={{
-          background: "var(--bg1)",
-          border: "0.5px solid var(--border)",
-          borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
-          padding: "10px 14px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
+      <div className="card-header" style={{
+        background: "var(--bg1)",
+        border: "0.5px solid var(--border)",
+        borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
+        padding: "10px 14px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
         <span className="card-title">Live METARs</span>
-        <span style={{ fontSize: 9, color: "var(--faint)" }}>
-          auto-refresh 5 min
-        </span>
+        <span style={{ fontSize: 9, color: "var(--faint)" }}>auto-refresh 5 min</span>
       </div>
 
-      <MetarCard label="Departure" icao={dep} phase="takeoff" />
+      <MetarCard label="Departure"   icao={dep}  phase="takeoff" />
       <MetarCard label="Destination" icao={dest} phase="landing-dest" />
-      <MetarCard label="Alternate" icao={alt} phase="landing-alt" />
+      <MetarCard label="Alternate"   icao={alt}  phase="landing-alt" />
 
       {!CHECKWX_KEY && (
         <div className="disclaimer" style={{ fontSize: 10 }}>
-          ⓘ Live METAR requires <code>VITE_CHECKWX_KEY</code> in{" "}
-          <code>.env.local</code>
+          ⓘ Live METAR requires <code>VITE_CHECKWX_KEY</code> in <code>.env.local</code>
         </div>
       )}
     </div>

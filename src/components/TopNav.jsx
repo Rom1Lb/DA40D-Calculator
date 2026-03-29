@@ -19,9 +19,9 @@ export function TopNav({ activeWarning, warnings, onPDF }) {
       : `${warnings?.length ?? 0} notice${(warnings?.length ?? 0) > 1 ? "s" : ""}`;
 
   const navItems = [
-    { to: "/", label: "Setup", short: "1" },
+    { to: "/",             label: "Setup",       short: "1" },
     { to: "/mass-balance", label: "Mass & Balance", short: "2" },
-    { to: "/performance", label: "Performance", short: "3" },
+    { to: "/performance",  label: "Performance", short: "3" },
   ];
 
   return (
@@ -40,18 +40,15 @@ export function TopNav({ activeWarning, warnings, onPDF }) {
       </div>
 
       {/* Page navigation */}
-      <nav
-        className="topnav-pages"
-        style={{
-          display: "flex",
-          gap: 2,
-          background: "var(--bg2)",
-          border: "0.5px solid var(--border)",
-          borderRadius: "var(--radius-md)",
-          padding: 3,
-          flexShrink: 0,
-        }}
-      >
+      <nav className="topnav-pages" style={{
+        display: "flex",
+        gap: 2,
+        background: "var(--bg2)",
+        border: "0.5px solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        padding: 3,
+        flexShrink: 0,
+      }}>
         {navItems.map(({ to, label }) => (
           <NavLink
             key={to}
@@ -71,9 +68,7 @@ export function TopNav({ activeWarning, warnings, onPDF }) {
               transition: "background 0.12s, color 0.12s",
               background: isActive ? "var(--bg0)" : "transparent",
               color: isActive ? "var(--text)" : "var(--muted)",
-              border: isActive
-                ? "0.5px solid var(--border)"
-                : "0.5px solid transparent",
+              border: isActive ? "0.5px solid var(--border)" : "0.5px solid transparent",
               boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.2)" : "none",
             })}
           >
@@ -86,39 +81,23 @@ export function TopNav({ activeWarning, warnings, onPDF }) {
       <div style={{ flex: 1 }} />
 
       {/* Warning badge */}
-      <div
-        className={`topbar-warning ${wLevel}`}
-        style={{ maxWidth: 340, flexShrink: 1 }}
-      >
+      <div className={`topbar-warning ${wLevel}`} style={{ maxWidth: 340, flexShrink: 1 }}>
         <div className="dot" />
         <span>{wText}</span>
       </div>
 
       {/* Separator */}
-      <div
-        style={{
-          width: "0.5px",
-          height: 28,
-          background: "var(--border)",
-          flexShrink: 0,
-          margin: "0 12px",
-        }}
-      />
+      <div style={{
+        width: "0.5px", height: 28,
+        background: "var(--border)",
+        flexShrink: 0,
+        margin: "0 12px",
+      }} />
 
       {/* Export PDF */}
-      <button
-        className="btn btn-primary"
-        onClick={onPDF}
-        style={{ flexShrink: 0 }}
-      >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
+      <button className="btn btn-primary" onClick={onPDF} style={{ flexShrink: 0 }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="7 10 12 15 17 10" />
           <line x1="12" y1="15" x2="12" y2="3" />
