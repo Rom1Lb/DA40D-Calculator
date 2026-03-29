@@ -5,12 +5,17 @@ import { AIRCRAFT_LIST } from "../data/aircraft.js";
 export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
   const ac = AIRCRAFT_LIST.find((a) => a.registration === state.acReg);
   const maxFuel = ac?.fuelUSG ?? 28;
+
   const fuelKg = (v) => {
     const n = Number(v);
     if (isNaN(n) || !n) return "";
-    const liters = Math.round(n * 3.785);
-    const kg = Math.round(n * 0.84 * 3.785);
-    return `≈ ${liters} L / ${kg} kg`;
+    return `≈ ${Math.round(n * 3.785)} L / ${Math.round(n * 0.84 * 3.785)} kg`;
+  };
+
+  // Total affiché à côté du label de rangée
+  const rowTotal = (a, b) => {
+    const t = (Number(a) || 0) + (Number(b) || 0);
+    return t > 0 ? `${t} kg` : "";
   };
 
   function cgBadge() {
@@ -31,6 +36,17 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
       : st === "warning"
         ? "var(--amber)"
         : "var(--green)";
+
+  // Style pour le header de colonne L / R
+  const colHeader = {
+    fontSize: 9,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    color: "var(--faint)",
+    textAlign: "right",
+    paddingBottom: 4,
+  };
 
   return (
     <div className="card">
@@ -58,81 +74,154 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
               >
                 Item
               </th>
-              <th
-                style={{
-                  textAlign: "right",
-                  color: "var(--muted)",
-                  fontWeight: 500,
-                  padding: "0 0 6px 8px",
-                }}
-              >
-                Mass (kg)
-              </th>
+              <th style={colHeader}>Left (kg)</th>
+              <th style={colHeader}>Right (kg)</th>
+              <th style={{ ...colHeader, color: "var(--muted)" }}>Total</th>
             </tr>
           </thead>
           <tbody>
+            {/* Front seats */}
             <tr>
-              <td style={{ padding: "5px 0", color: "var(--text)" }}>
+              <td
+                style={{
+                  padding: "5px 0",
+                  color: "var(--text)",
+                  verticalAlign: "middle",
+                }}
+              >
                 Front seats
               </td>
-              <td style={{ padding: "5px 8px", textAlign: "right" }}>
+              <td style={{ padding: "4px 0 4px 6px" }}>
                 <InputField
-                  inline
-                  value={state.frontSeatsKg}
-                  onChange={(v) => setField("frontSeatsKg", v)}
+                  value={state.frontLeftKg}
+                  onChange={(v) => setField("frontLeftKg", v)}
                   min={0}
                   max={200}
+                  inputStyle={{ textAlign: "right" }}
                 />
               </td>
+              <td style={{ padding: "4px 0 4px 6px" }}>
+                <InputField
+                  value={state.frontRightKg}
+                  onChange={(v) => setField("frontRightKg", v)}
+                  min={0}
+                  max={200}
+                  inputStyle={{ textAlign: "right" }}
+                />
+              </td>
+              <td
+                style={{
+                  padding: "4px 0 4px 10px",
+                  textAlign: "right",
+                  fontVariantNumeric: "tabular-nums",
+                  color: "var(--muted)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {rowTotal(state.frontLeftKg, state.frontRightKg)}
+              </td>
             </tr>
+
+            {/* Rear seats */}
             <tr>
-              <td style={{ padding: "5px 0", color: "var(--text)" }}>
+              <td
+                style={{
+                  padding: "5px 0",
+                  color: "var(--text)",
+                  verticalAlign: "middle",
+                }}
+              >
                 Rear seats
               </td>
-              <td style={{ padding: "5px 8px", textAlign: "right" }}>
+              <td style={{ padding: "4px 0 4px 6px" }}>
                 <InputField
-                  inline
-                  value={state.rearSeatsKg}
-                  onChange={(v) => setField("rearSeatsKg", v)}
+                  value={state.rearLeftKg}
+                  onChange={(v) => setField("rearLeftKg", v)}
                   min={0}
                   max={200}
+                  inputStyle={{ textAlign: "right" }}
                 />
               </td>
+              <td style={{ padding: "4px 0 4px 6px" }}>
+                <InputField
+                  value={state.rearRightKg}
+                  onChange={(v) => setField("rearRightKg", v)}
+                  min={0}
+                  max={200}
+                  inputStyle={{ textAlign: "right" }}
+                />
+              </td>
+              <td
+                style={{
+                  padding: "4px 0 4px 10px",
+                  textAlign: "right",
+                  fontVariantNumeric: "tabular-nums",
+                  color: "var(--muted)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {rowTotal(state.rearLeftKg, state.rearRightKg)}
+              </td>
             </tr>
+
+            {/* Baggage — colspan sur les 2 colonnes input */}
             <tr>
-              <td style={{ padding: "5px 0", color: "var(--text)" }}>
+              <td
+                style={{
+                  padding: "5px 0",
+                  color: "var(--text)",
+                  verticalAlign: "middle",
+                }}
+              >
                 Baggage
                 <span style={{ color: "var(--muted)", fontSize: 11 }}>
                   {" "}
                   (max 30 kg)
                 </span>
               </td>
-              <td style={{ padding: "5px 8px", textAlign: "right" }}>
+              <td colSpan={2} style={{ padding: "4px 0 4px 6px" }}>
                 <InputField
-                  inline
                   value={state.bagFwdKg}
                   onChange={(v) => setField("bagFwdKg", v)}
                   min={0}
                   max={45}
                 />
               </td>
+              <td
+                style={{
+                  padding: "4px 0 4px 10px",
+                  textAlign: "right",
+                  fontVariantNumeric: "tabular-nums",
+                  color: "var(--muted)",
+                }}
+              >
+                {state.bagFwdKg ? `${Number(state.bagFwdKg) || 0} kg` : ""}
+              </td>
             </tr>
+
             <tr>
-              <td colSpan={3} style={{ padding: "2px 0" }}>
+              <td colSpan={4} style={{ padding: "2px 0" }}>
                 <div style={{ borderTop: "1px solid var(--border)" }} />
               </td>
             </tr>
+
+            {/* Fuel */}
             <tr>
-              <td style={{ padding: "5px 0", color: "var(--text)" }}>
+              <td
+                style={{
+                  padding: "5px 0",
+                  color: "var(--text)",
+                  verticalAlign: "middle",
+                }}
+              >
                 Fuel
                 <span style={{ color: "var(--muted)", fontSize: 11 }}>
                   {" "}
                   (max {maxFuel} USG)
                 </span>
               </td>
-              <td style={{ padding: "5px 8px", textAlign: "right" }}>
+              <td colSpan={2} style={{ padding: "4px 0 4px 6px" }}>
                 <InputField
-                  inline
                   value={state.fuelUSG}
                   onChange={(v) => setField("fuelUSG", v)}
                   min={0}
@@ -140,18 +229,26 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
                   hint={fuelKg(state.fuelUSG)}
                 />
               </td>
+              <td />
             </tr>
+
+            {/* Burnt fuel */}
             <tr>
-              <td style={{ padding: "5px 0", color: "var(--text)" }}>
+              <td
+                style={{
+                  padding: "5px 0",
+                  color: "var(--text)",
+                  verticalAlign: "middle",
+                }}
+              >
                 Burnt fuel
                 <span style={{ color: "var(--muted)", fontSize: 11 }}>
                   {" "}
                   (dep→ldg)
                 </span>
               </td>
-              <td style={{ padding: "5px 8px", textAlign: "right" }}>
+              <td colSpan={2} style={{ padding: "4px 0 4px 6px" }}>
                 <InputField
-                  inline
                   value={state.burntFuelUSG}
                   onChange={(v) => setField("burntFuelUSG", v)}
                   min={0}
@@ -159,6 +256,7 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
                   hint={fuelKg(state.burntFuelUSG)}
                 />
               </td>
+              <td />
             </tr>
           </tbody>
         </table>
@@ -167,9 +265,8 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
         {mb && (
           <>
             <div className="divider" style={{ margin: "0" }} />
-
-            {/* Itemised loading */}
             <div className="sub-header">Loading breakdown</div>
+
             <table
               style={{
                 width: "100%",
@@ -275,9 +372,8 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
                   }}
                 >
                   <td style={{ padding: "4px 0", color: "var(--muted)" }}>
-                    Taxi fuel
+                    Taxi fuel{" "}
                     <span style={{ color: "var(--faint)", fontSize: 10 }}>
-                      {" "}
                       (fixed)
                     </span>
                   </td>
@@ -329,9 +425,8 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
                         }}
                       >
                         <td style={{ padding: "4px 0", color: "var(--muted)" }}>
-                          Burnt fuel
+                          Burnt fuel{" "}
                           <span style={{ color: "var(--faint)", fontSize: 10 }}>
-                            {" "}
                             ({state.burntFuelUSG} USG)
                           </span>
                         </td>
@@ -373,7 +468,7 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
 
             <div className="divider" style={{ margin: "0" }} />
 
-            {/* ZFM / Ramp / TOM / LM summary */}
+            {/* ZFM / Ramp / TOM / LM */}
             <table
               style={{
                 width: "100%",
@@ -494,7 +589,6 @@ export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
               </div>
             )}
 
-            {/* CG chart — hidden when rendered separately in MassBalancePage */}
             {!hideCGChart && (
               <>
                 <div className="divider" style={{ margin: "0" }} />

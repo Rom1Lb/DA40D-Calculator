@@ -1,8 +1,5 @@
 /**
  * massBalance.js
- * ─────────────────────────────────────────────────────────────
- * Mass & Balance and Airspeeds calculations.
- * ─────────────────────────────────────────────────────────────
  */
 
 import {
@@ -18,54 +15,44 @@ import { evalCurve } from "./interpolation.js";
 
 export { AIRCRAFT_LIST };
 
-/**
- * Compute mass and CG for a given loading.
- *
- * @param {{
- *   acReg: string,
- *   frontSeatsKg: number,
- *   rearSeatsKg: number,
- *   bagFwdKg: number,
- *   bagAftKg: number,
- *   fuelUSG: number,
- *   burntFuelUSG: number,
- * }} loading
- */
 export function calcMassBalance(loading) {
   const ac = AIRCRAFT_LIST.find((a) => a.registration === loading.acReg);
   if (!ac) return { error: "Aircraft not found" };
 
   const arms = MOMENT_ARMS;
-  const fuelDensity = 0.84 * 3.78541; // kg per USG (0.84 kg/l × 3.785 l/USG)
+  const fuelDensity = 0.84 * 3.78541;
 
   const fuelKg = loading.fuelUSG * fuelDensity;
   const burntKg = loading.burntFuelUSG * fuelDensity;
-  const TAXI_KG = 1.5; // fixed taxi fuel: 1.5 kg @ arm 2.63
-  const TAXI_ARM = arms.fuel; // same arm as fuel (2.63 m)
+  const TAXI_KG = 1.5;
+  const TAXI_ARM = arms.fuel;
+
+  // Addition des sièges gauche + droite
+  const frontSeatsKg =
+    (Number(loading.frontLeftKg) || 0) + (Number(loading.frontRightKg) || 0);
+  const rearSeatsKg =
+    (Number(loading.rearLeftKg) || 0) + (Number(loading.rearRightKg) || 0);
 
   const items = [
     { label: "Empty aircraft", mass: ac.bew, arm: ac.arm },
-    { label: "Front seats", mass: loading.frontSeatsKg, arm: arms.frontSeats },
-    { label: "Rear seats", mass: loading.rearSeatsKg, arm: arms.rearSeats },
+    { label: "Front seats", mass: frontSeatsKg, arm: arms.frontSeats },
+    { label: "Rear seats", mass: rearSeatsKg, arm: arms.rearSeats },
     { label: "Baggage", mass: loading.bagFwdKg, arm: arms.bagFwd },
     { label: `Fuel (${loading.fuelUSG} USG)`, mass: fuelKg, arm: arms.fuel },
   ];
 
-  const zfItems = items.slice(0, 4); // without fuel
+  const zfItems = items.slice(0, 4);
   const zfMass = zfItems.reduce((s, i) => s + i.mass, 0);
   const zfMom = zfItems.reduce((s, i) => s + i.mass * i.arm, 0);
   const zfCG = zfMass > 0 ? zfMom / zfMass : 0;
 
-  // Ramp mass = ZFM + full fuel
   const rampMass = zfMass + fuelKg;
   const rampMom = zfMom + fuelKg * arms.fuel;
 
-  // Take-Off Mass = Ramp mass − taxi fuel
   const tomMass = rampMass - TAXI_KG;
   const tomMom = rampMom - TAXI_KG * TAXI_ARM;
   const tomCG = tomMass > 0 ? tomMom / tomMass : 0;
 
-  // Landing Mass = TOM − burnt fuel
   const lmMass = tomMass - burntKg;
   const lmMom = tomMom - burntKg * arms.fuel;
   const lmCG = lmMass > 0 ? lmMom / lmMass : 0;
@@ -104,20 +91,12 @@ export function calcMassBalance(loading) {
   };
 }
 
-/**
- * Check if a CG point is within Normal category limits.
- * Returns 'ok', 'warning' (utility only), or 'danger'.
- */
 function cgCheck(cg, mass) {
   if (isInEnvelope(cg, mass, CG_NORMAL)) return "ok";
   if (isInEnvelope(cg, mass, CG_UTILITY)) return "warning";
   return "danger";
 }
 
-/**
- * Point-in-polygon test for CG envelope.
- * Envelope points are ordered as a polygon [arm, mass].
- */
 function isInEnvelope(cg, mass, envelope) {
   if (envelope.length < 3) return false;
   let inside = false;
@@ -133,21 +112,12 @@ function isInEnvelope(cg, mass, envelope) {
   return inside;
 }
 
-/**
- * Interpolate operating airspeeds for a given mass.
- * Uses linear interpolation between 850/1000/1150 kg reference values.
- *
- * @param {number} mass - aircraft mass in kg
- * @returns {Array<{ name: string, kias: number | null }>}
- */
 export function calcAirspeeds(mass) {
-  const refs = AIRSPEED_MASS_REFS; // [850, 1000, 1150]
-
+  const refs = AIRSPEED_MASS_REFS;
   return AIRSPEEDS.map((entry) => {
     const { code, name, v850, v1000, v1150, category } = entry;
     const vals = [v850, v1000, v1150];
     const defined = vals.filter((v) => v !== null);
-
     if (defined.length <= 1) {
       return {
         code,
@@ -157,7 +127,6 @@ export function calcAirspeeds(mass) {
         isLimit: category === "limit",
       };
     }
-
     const curve = { xs: [], ys: [] };
     vals.forEach((v, i) => {
       if (v !== null) {
@@ -165,33 +134,15 @@ export function calcAirspeeds(mass) {
         curve.ys.push(v);
       }
     });
-
     const kias = Math.round(evalCurve(curve, mass));
     return { code, name, kias, category, isLimit: category === "limit" };
   });
 }
 
-/**
- * Compute pressure altitude from elevation and QNH.
- * Formula: PA = elevation + (1013.25 - QNH) × 27
- *
- * @param {number} elevFt  - aerodrome elevation in feet
- * @param {number} qnhHPa  - QNH in hPa
- * @returns {number} pressure altitude in feet
- */
 export function pressureAltitude(elevFt, qnhHPa) {
   return Math.round(elevFt + (1013.25 - qnhHPa) * 27);
 }
 
-/**
- * Decompose wind into headwind and crosswind components.
- *
- * @param {number} windDir   - wind direction (°M)
- * @param {number} windSpeed - wind speed (kts)
- * @param {number} rwyAxis   - runway axis (°M)
- * @returns {{ headwind: number, crosswind: number }}
- *   headwind > 0 = headwind, < 0 = tailwind
- */
 export function windComponents(windDir, windSpeed, rwyAxis) {
   const angle = ((windDir - rwyAxis) * Math.PI) / 180;
   return {

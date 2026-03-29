@@ -29,11 +29,13 @@ const DEFAULT_AD = {
 
 const INITIAL = {
   acReg: AIRCRAFT_LIST[0]?.registration ?? "",
-  //frontSeatsKg: 0,
-  //rearSeatsKg: 0,
-  //bagFwdKg: 0,
-  //fuelUSG: 28,
-  //burntFuelUSG: 10,
+  frontLeftKg: "",
+  frontRightKg: "",
+  rearLeftKg: "",
+  rearRightKg: "",
+  bagFwdKg: "",
+  fuelUSG: "",
+  burntFuelUSG: "",
   aerodromes: {
     dep: { ...DEFAULT_AD },
     dest: { ...DEFAULT_AD },
@@ -58,15 +60,6 @@ export function useAppState() {
     }));
   }
 
-  /**
-   * Apply multiple aerodrome field updates in a single setState call.
-   * Use this for bulk fills (e.g. ICAO lookup) so React never sees
-   * partial state — each call to setAeroField in a loop would overwrite
-   * the previous one because they all close over the same stale snapshot.
-   *
-   * @param {string} which   - "dep" | "dest" | "alt"
-   * @param {object} updates - { fieldName: value, … }
-   */
   function setBulkAeroFields(which, updates) {
     setState((s) => ({
       ...s,
@@ -82,16 +75,20 @@ export function useAppState() {
     if (!ac) return null;
     return calcMassBalance({
       acReg: state.acReg,
-      frontSeatsKg: Number(state.frontSeatsKg) || 0,
-      rearSeatsKg: Number(state.rearSeatsKg) || 0,
+      frontLeftKg: Number(state.frontLeftKg) || 0,
+      frontRightKg: Number(state.frontRightKg) || 0,
+      rearLeftKg: Number(state.rearLeftKg) || 0,
+      rearRightKg: Number(state.rearRightKg) || 0,
       bagFwdKg: Number(state.bagFwdKg) || 0,
       fuelUSG: Number(state.fuelUSG) || 0,
       burntFuelUSG: Number(state.burntFuelUSG) || 0,
     });
   }, [
     state.acReg,
-    state.frontSeatsKg,
-    state.rearSeatsKg,
+    state.frontLeftKg,
+    state.frontRightKg,
+    state.rearLeftKg,
+    state.rearRightKg,
     state.bagFwdKg,
     state.fuelUSG,
     state.burntFuelUSG,
@@ -219,7 +216,7 @@ export function useAppState() {
       w.push({
         id: "cw-dep",
         level: "danger",
-        text: `Crosswind ${perfDep.crosswind} kt > 20 kt limit (dep)`,
+        text: `Crosswind ${perfDep.crosswind}  kt > 20 kt limit (dep)`,
       });
     if (perfDest?.crosswind > 20)
       w.push({
@@ -231,7 +228,7 @@ export function useAppState() {
       w.push({
         id: "cw-alt",
         level: "danger",
-        text: `Crosswind ${perfAlt.crosswind} kt > 20 kt limit (alt)`,
+        text: `Crosswind ${perfAlt.crosswind}  kt > 20 kt limit (alt)`,
       });
     return w;
   }, [mb, state.aerodromes, perfDep, perfDest, perfAlt]);
