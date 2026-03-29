@@ -1,14 +1,14 @@
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import "./styles/global.css";
-import "./styles/additions.css"; // ← ajouter cette ligne
+import "./styles/additions.css";
 import App from "./App.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 
 createRoot(document.getElementById("root")).render(
   <ErrorBoundary>
-    <BrowserRouter>
+    <HashRouter>
       <App />
-    </BrowserRouter>
+    </HashRouter>
   </ErrorBoundary>,
 );

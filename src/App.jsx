@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAppState } from "./hooks/useAppState.js";
 import { TopNav } from "./components/TopNav.jsx";
 import { AppRouter } from "./router.jsx";
@@ -8,7 +7,6 @@ import { generateDispatchPDF } from "./pdf/report.js";
 import { AIRCRAFT_LIST } from "./data/aircraft.js";
 
 function AppShell() {
-  const navigate = useNavigate();
   const [showSplash, setShowSplash] = useState(true);
 
   const {
@@ -27,8 +25,7 @@ function AppShell() {
 
   const handleContinue = useCallback(() => {
     setShowSplash(false);
-    navigate("/", { replace: true }); // always land on Setup page
-  }, [navigate]);
+  }, []);
 
   const handlePDF = useCallback(async () => {
     try {
@@ -75,6 +72,4 @@ function AppShell() {
   );
 }
 
-// AppShell needs to be inside BrowserRouter to use useNavigate,
-// so we export a wrapper that BrowserRouter wraps in main.jsx.
 export default AppShell;

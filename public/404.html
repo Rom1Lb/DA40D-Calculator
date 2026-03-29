@@ -4,13 +4,14 @@
     <meta charset="utf-8" />
     <title>DA40-D Calculator</title>
     <script>
-      // GitHub Pages SPA redirect trick.
-      // Stores the current path in sessionStorage and redirects to /.
-      // index.html then reads it and replaces the history entry.
       var path = window.location.pathname;
       var base = "/DA40D-Calculator";
-      var rest = path.replace(base, "") || "/";
-      sessionStorage.setItem("spa_redirect", rest + window.location.search);
+      var rest = path.startsWith(base) ? path.slice(base.length) : path;
+      if (!rest.startsWith("/")) rest = "/" + rest;
+      sessionStorage.setItem(
+        "spa_redirect",
+        rest + window.location.search + window.location.hash,
+      );
       window.location.replace(base + "/");
     </script>
   </head>
