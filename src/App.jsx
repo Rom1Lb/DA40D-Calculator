@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
-import { useAppState }         from "./hooks/useAppState.js";
-import { TopNav }              from "./components/TopNav.jsx";
-import { AppRouter }           from "./router.jsx";
-import { SplashScreen }        from "./components/SplashScreen.jsx";
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppState } from "./hooks/useAppState.js";
+import { TopNav } from "./components/TopNav.jsx";
+import { AppRouter } from "./router.jsx";
+import { SplashScreen } from "./components/SplashScreen.jsx";
 import { generateDispatchPDF } from "./pdf/report.js";
-import { AIRCRAFT_LIST }       from "./data/aircraft.js";
+import { AIRCRAFT_LIST } from "./data/aircraft.js";
 
-export default function App() {
+function AppShell() {
+  const navigate = useNavigate();
   const [showSplash, setShowSplash] = useState(true);
 
   const {
@@ -23,10 +25,19 @@ export default function App() {
     activeWarning,
   } = useAppState();
 
+  const handleContinue = useCallback(() => {
+    setShowSplash(false);
+    navigate("/", { replace: true }); // always land on Setup page
+  }, [navigate]);
+
   const handlePDF = useCallback(async () => {
     try {
       await generateDispatchPDF({
-        state, mb, perfDep, perfDest, perfAlt,
+        state,
+        mb,
+        perfDep,
+        perfDest,
+        perfAlt,
         shownCharts: { todr: true, ldr: true, lrr: true },
         aircraftList: AIRCRAFT_LIST,
       });
@@ -37,10 +48,9 @@ export default function App() {
   }, [state, mb, perfDep, perfDest, perfAlt]);
 
   if (showSplash) {
-    return <SplashScreen onContinue={() => setShowSplash(false)} />;
+    return <SplashScreen onContinue={handleContinue} />;
   }
 
-  // Props forwarded to every page
   const pageProps = {
     state,
     setField,
@@ -64,3 +74,7 @@ export default function App() {
     </div>
   );
 }
+
+// AppShell needs to be inside BrowserRouter to use useNavigate,
+// so we export a wrapper that BrowserRouter wraps in main.jsx.
+export default AppShell;

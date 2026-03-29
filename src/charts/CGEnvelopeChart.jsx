@@ -229,7 +229,7 @@ export function CGEnvelopeChart({ mb }) {
     <canvas
       ref={ref}
       id="cg-envelope"
-      style={{ width: "100%", height: 320, display: "block" }}
+      style={{ width: "100%", height: 520, display: "block" }}
     />
   );
 }

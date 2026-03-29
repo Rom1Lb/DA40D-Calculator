@@ -1,60 +1,180 @@
-/* ── Append these rules to the END of src/styles/global.css ── */
-
-/* Spinner used in MetarSidebar refresh button */
+/* ── Spinner ─────────────────────────────────────────────────── */
 @keyframes _spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Multi-page responsive breakpoints ──────────────────────── */
-
-/* Performance page: 3 columns → 1 column on small screens */
-@media (max-width: 1100px) {
-  .perf-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
-}
-@media (max-width: 700px) {
-  .perf-grid {
-    grid-template-columns: 1fr !important;
+  to {
+    transform: rotate(360deg);
   }
 }
 
-/* Setup page: 3 columns → 2 → 1 */
-@media (max-width: 900px) {
-  .setup-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
-  .setup-metar {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-  }
-}
-@media (max-width: 600px) {
-  .setup-grid {
-    grid-template-columns: 1fr !important;
-  }
-  .setup-metar {
-    grid-template-columns: 1fr !important;
-  }
+/* ── bg3 token ───────────────────────────────────────────────── */
+:root {
+  --bg3: #2d333b;
 }
 
-/* M&B page: 2 columns → 1 */
-@media (max-width: 800px) {
-  .mb-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
+/* ══════════════════════════════════════════════════════════════
+   TOPBAR — responsive
+   ══════════════════════════════════════════════════════════════ */
 
-/* TopNav: hide labels on very small screens */
-@media (max-width: 520px) {
-  .topnav-pages a span.nav-label {
+/* Below 780px: warning badge hidden, PDF button text hidden */
+@media (max-width: 780px) {
+  .topbar-warning span:last-child {
+    display: none;
+  }
+  .topbar .btn span {
     display: none;
   }
 }
 
-/* bg3 token used in MetarSidebar raw METAR block */
-:root {
-  --bg3: #2d333b;
+/* ══════════════════════════════════════════════════════════════
+   SETUP PAGE — 2 columns → 1 column
+   ══════════════════════════════════════════════════════════════ */
+
+/* Setup page main grid */
+.setup-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 20px 48px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .setup-page {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MASS & BALANCE PAGE — 2 columns → 1 column
+   ══════════════════════════════════════════════════════════════ */
+
+.mb-page {
+  display: grid;
+  gap: 16px;
+  padding: 16px 20px 48px;
+  align-items: start;
+}
+
+/* Default: inputs left, chart right */
+@media (min-width: 801px) {
+  .mb-page {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Below 800px: single column, chart below inputs */
+@media (max-width: 800px) {
+  .mb-page {
+    grid-template-columns: 1fr;
+  }
+  /* Remove sticky on small screens */
+  .mb-page .mb-chart-col {
+    position: static !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PERFORMANCE PAGE — 3 columns → 2 → 1
+   ══════════════════════════════════════════════════════════════ */
+
+.perf-page {
+  display: grid;
+  gap: 16px;
+  padding: 16px 20px 48px;
+  align-items: start;
+}
+
+@media (min-width: 1101px) {
+  .perf-page {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 1100px) {
+  .perf-page {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .perf-page {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   METAR SIDEBAR — tiles responsive inside card
+   ══════════════════════════════════════════════════════════════ */
+
+/* On narrow screens the 3-col data tile grid drops to 2 */
+@media (max-width: 500px) {
+  .metar-tiles {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOPBAR RESPONSIVE — 2-row layout
+   ══════════════════════════════════════════════════════════════ */
+
+.topbar-responsive {
+  height: auto !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  padding: 8px 16px !important;
+  gap: 8px !important;
+}
+
+/* Row 1: brand left, warning+PDF right */
+.topbar-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+/* Row 2: nav tabs */
+.topbar-row2 {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-nav {
+  display: flex;
+  gap: 2px;
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  width: 100%;
+}
+
+.topbar-nav a {
+  flex: 1;
+  justify-content: center !important;
+}
+
+/* Hide warning text on very small screens, keep dot+badge */
+@media (max-width: 500px) {
+  .topbar-warning-text {
+    display: none;
+  }
+
+  .topbar-warning {
+    min-width: 0;
+    padding: 5px 8px;
+  }
+
+  /* Hide "Export PDF" text, keep icon only */
+  .btn-label {
+    display: none;
+  }
 }

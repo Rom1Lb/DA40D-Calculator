@@ -2,7 +2,7 @@ import { InputField } from "./InputField.jsx";
 import { CGEnvelopeChart } from "../charts/CGEnvelopeChart.jsx";
 import { AIRCRAFT_LIST } from "../data/aircraft.js";
 
-export function MassBalancePanel({ state, setField, mb }) {
+export function MassBalancePanel({ state, setField, mb, hideCGChart = false }) {
   const ac = AIRCRAFT_LIST.find((a) => a.registration === state.acReg);
   const maxFuel = ac?.fuelUSG ?? 28;
   const fuelKg = (v) => {
@@ -71,7 +71,6 @@ export function MassBalancePanel({ state, setField, mb }) {
             </tr>
           </thead>
           <tbody>
-            {/* Front seats */}
             <tr>
               <td style={{ padding: "5px 0", color: "var(--text)" }}>
                 Front seats
@@ -86,7 +85,6 @@ export function MassBalancePanel({ state, setField, mb }) {
                 />
               </td>
             </tr>
-            {/* Rear seats */}
             <tr>
               <td style={{ padding: "5px 0", color: "var(--text)" }}>
                 Rear seats
@@ -101,7 +99,6 @@ export function MassBalancePanel({ state, setField, mb }) {
                 />
               </td>
             </tr>
-            {/* Baggage */}
             <tr>
               <td style={{ padding: "5px 0", color: "var(--text)" }}>
                 Baggage
@@ -120,13 +117,11 @@ export function MassBalancePanel({ state, setField, mb }) {
                 />
               </td>
             </tr>
-            {/* Divider row */}
             <tr>
               <td colSpan={3} style={{ padding: "2px 0" }}>
                 <div style={{ borderTop: "1px solid var(--border)" }} />
               </td>
             </tr>
-            {/* Fuel */}
             <tr>
               <td style={{ padding: "5px 0", color: "var(--text)" }}>
                 Fuel
@@ -146,7 +141,6 @@ export function MassBalancePanel({ state, setField, mb }) {
                 />
               </td>
             </tr>
-            {/* Burnt fuel */}
             <tr>
               <td style={{ padding: "5px 0", color: "var(--text)" }}>
                 Burnt fuel
@@ -272,7 +266,8 @@ export function MassBalancePanel({ state, setField, mb }) {
                       </td>
                     </tr>
                   ))}
-                {/* Taxi fuel — fixed deduction */}
+
+                {/* Taxi fuel */}
                 <tr
                   style={{
                     borderBottom:
@@ -317,7 +312,8 @@ export function MassBalancePanel({ state, setField, mb }) {
                     − {((mb.taxiKg ?? 1.5) * (mb.taxiArm ?? 2.63)).toFixed(1)}
                   </td>
                 </tr>
-                {/* Burnt fuel — only shown if > 0 */}
+
+                {/* Burnt fuel */}
                 {Number(state.burntFuelUSG) > 0 &&
                   (() => {
                     const burntKg =
@@ -377,7 +373,7 @@ export function MassBalancePanel({ state, setField, mb }) {
 
             <div className="divider" style={{ margin: "0" }} />
 
-            {/* ZFM / Ramp / TOM / LM summary table */}
+            {/* ZFM / Ramp / TOM / LM summary */}
             <table
               style={{
                 width: "100%",
@@ -498,11 +494,16 @@ export function MassBalancePanel({ state, setField, mb }) {
               </div>
             )}
 
-            <div className="divider" style={{ margin: "0" }} />
-            <div className="sub-header">
-              CG Envelope — Normal &amp; Utility categories
-            </div>
-            <CGEnvelopeChart mb={mb} />
+            {/* CG chart — hidden when rendered separately in MassBalancePage */}
+            {!hideCGChart && (
+              <>
+                <div className="divider" style={{ margin: "0" }} />
+                <div className="sub-header">
+                  CG Envelope — Normal &amp; Utility categories
+                </div>
+                <CGEnvelopeChart mb={mb} />
+              </>
+            )}
           </>
         )}
       </div>
